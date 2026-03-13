@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-<head>
+<head><link rel="manifest" href="manifest.json">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meu Bloco de Notas Pro</title>
@@ -30,6 +30,11 @@
             background-color: var(--bg);
             color: var(--text);
             transition: 0.3s;
+            <script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+  }
+</script>
         }
 
         .app-container { display: flex; height: 100vh; flex-direction: row; }
