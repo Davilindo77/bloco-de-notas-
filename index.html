@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
@@ -15,7 +15,6 @@
             --input-bg: #ffffff;
         }
 
-
         body.dark-mode {
             --bg: #0f172a;
             --sidebar-bg: #1e293b;
@@ -25,7 +24,6 @@
             --input-bg: #334155;
         }
 
-
         body {
             margin: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -34,16 +32,13 @@
             transition: 0.3s;
         }
 
-
         .app-container { display: flex; height: 100vh; flex-direction: row; }
-
 
         /* Mobile Responsive */
         @media (max-width: 768px) {
             .app-container { flex-direction: column; }
             .sidebar { width: 100% !important; height: auto !important; border-right: none !important; border-bottom: 1px solid var(--border); }
         }
-
 
         .sidebar {
             width: 320px;
@@ -55,7 +50,6 @@
             box-sizing: border-box;
         }
 
-
         input, textarea {
             background: var(--input-bg);
             color: var(--text);
@@ -65,7 +59,6 @@
             margin-bottom: 10px;
             outline: none;
         }
-
 
         button#btn-salvar {
             background: var(--primary);
@@ -77,15 +70,11 @@
             cursor: pointer;
         }
 
-
         .main-content { flex: 1; padding: 30px; overflow-y: auto; }
-
 
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;}
 
-
         #busca { width: 100%; max-width: 300px; margin-bottom: 0; }
-
 
         .grid-notas {
             display: grid;
@@ -93,10 +82,111 @@
             gap: 20px;
         }
 
-
         .card-nota {
             background: var(--card-bg);
             padding: 20px;
             border-radius: 12px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            border-top
+            border-top: 5px solid var(--primary);
+            position: relative;
+        }
+
+        .btn-delete {
+            position: absolute; top: 10px; right: 10px;
+            background: #fee2e2; color: #ef4444;
+            border: none; border-radius: 50%; width: 25px; height: 25px; cursor: pointer;
+        }
+
+        #btn-tema {
+            background: var(--primary); color: white; border: none;
+            padding: 8px 15px; border-radius: 20px; cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <aside class="sidebar">
+        <h2>📝 Nova Nota</h2>
+        <input type="text" id="titulo" placeholder="Título...">
+        <textarea id="texto" placeholder="Conteúdo da nota..." rows="8"></textarea>
+        <button id="btn-salvar">Salvar Nota</button>
+    </aside>
+
+    <main class="main-content">
+        <div class="header">
+            <h1>Minhas Notas</h1>
+            <input type="text" id="busca" placeholder="🔍 Pesquisar notas...">
+            <button id="btn-tema">🌙 Modo Escuro</button>
+        </div>
+        
+        <div id="lista-notas" class="grid-notas"></div>
+    </main>
+</div>
+
+<script>
+    const campoTitulo = document.getElementById('titulo');
+    const campoTexto = document.getElementById('texto');
+    const campoBusca = document.getElementById('busca');
+    const botaoSalvar = document.getElementById('btn-salvar');
+    const listaNotas = document.getElementById('lista-notas');
+    const btnTema = document.getElementById('btn-tema');
+
+    let notas = JSON.parse(localStorage.getItem('notas_v5')) || [];
+
+    // TEMA
+    if (localStorage.getItem('tema') === 'escuro') {
+        document.body.classList.add('dark-mode');
+        btnTema.innerText = "☀️ Modo Claro";
+    }
+
+    btnTema.onclick = () => {
+        document.body.classList.toggle('dark-mode');
+        const isDark = document.body.classList.contains('dark-mode');
+        localStorage.setItem('tema', isDark ? 'escuro' : 'claro');
+        btnTema.innerText = isDark ? "☀️ Modo Claro" : "🌙 Modo Escuro";
+    };
+
+    // RENDERIZAR NOTAS COM FILTRO
+    function renderizar(filtro = '') {
+        listaNotas.innerHTML = '';
+        const notasFiltradas = notas.filter(n => 
+            n.titulo.toLowerCase().includes(filtro.toLowerCase()) || 
+            n.texto.toLowerCase().includes(filtro.toLowerCase())
+        );
+
+        notasFiltradas.forEach((nota, index) => {
+            const card = document.createElement('div');
+            card.className = 'card-nota';
+            card.innerHTML = `
+                <button class="btn-delete" onclick="excluir(${index})">✕</button>
+                <h4>${nota.titulo}</h4>
+                <p>${nota.texto}</p>
+            `;
+            listaNotas.appendChild(card);
+        });
+    }
+
+    // SALVAR
+    botaoSalvar.onclick = () => {
+        if (!campoTitulo.value || !campoTexto.value) return alert("Preencha tudo!");
+        notas.push({ titulo: campoTitulo.value, texto: campoTexto.value });
+        localStorage.setItem('notas_v5', JSON.stringify(notas));
+        campoTitulo.value = ''; campoTexto.value = '';
+        renderizar();
+    };
+
+    // EXCLUIR
+    window.excluir = (index) => {
+        notas.splice(index, 1);
+        localStorage.setItem('notas_v5', JSON.stringify(notas));
+        renderizar();
+    };
+
+    // BUSCAR
+    campoBusca.oninput = () => renderizar(campoBusca.value);
+
+    renderizar();
+</script>
+</body>
+</html>
